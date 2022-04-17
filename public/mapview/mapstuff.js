@@ -8,7 +8,28 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // show the scale bar on the lower left corner
 L.control.scale({imperial: true, metric: true}).addTo(map);
 
-// show a marker on the map
-L.marker({lon: 0, lat: 0}).bindPopup('The center of the world').addTo(map);
+const populateMap = async ()=>{
+  let coordCount = 0;
+  const res = await fetch("http://192.168.1.169:3838/api/all", {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 
-console.log("Map stuff.js");
+  const rawdata = await res.json();
+
+  for(const protest of rawdata){
+    coords = protest["loc"]["coordinates"];
+    if(coords.length == 2){
+      //TODO: Check for proper coordinate format
+      //Some of the coordinates have garbage input
+      console.log(protest);
+      coordCount = coordCount+1;
+      L.marker({lat: coords[0], lon: coords[1]}).bindPopup('Protest').addTo(map);
+    }
+  }
+  console.log(coordCount);
+};
+
+populateMap();
